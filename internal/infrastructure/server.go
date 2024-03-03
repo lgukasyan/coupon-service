@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"coupon_service/internal/domain/model"
 	"coupon_service/internal/infrastructure/db"
 	"coupon_service/internal/infrastructure/router"
 	"log"
@@ -9,8 +10,13 @@ import (
 
 func Start() {
 	// Check DB connection and then start server
-	_, err := db.New().Connect()
+	db, err := db.New().Connect()
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Migration
+	if err := db.AutoMigrate(&model.Coupon{}); err != nil {
 		log.Fatal(err)
 	}
 

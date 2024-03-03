@@ -14,9 +14,7 @@ type IDatabase interface {
 
 type Database struct{}
 
-func New() IDatabase {
-	return &Database{}
-}
+func New() IDatabase { return &Database{} }
 
 func (d *Database) Connect() (*gorm.DB, error) {
 	configDB, err := config.NewDBConfig()
@@ -24,11 +22,11 @@ func (d *Database) Connect() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	conn, err := gorm.Open(postgres.New(postgres.Config{DSN: configDB.DSN}))
+	db, err := gorm.Open(postgres.New(postgres.Config{DSN: configDB.DSN}))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return conn, nil
+	return db, nil
 }
