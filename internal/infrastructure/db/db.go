@@ -22,7 +22,11 @@ func (d *Database) Connect() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db, err := gorm.Open(postgres.New(postgres.Config{DSN: configDB.DSN}))
+	db, err := gorm.Open(postgres.Open(configDB.DSN), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+
+	db.DisableForeignKeyConstraintWhenMigrating = true
 
 	if err != nil {
 		log.Fatal(err)
