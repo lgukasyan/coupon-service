@@ -10,7 +10,7 @@ type IEnv interface {
 type Env struct{}
 
 // Create new env obj
-func New() IEnv {
+func NewEnvConfig() IEnv {
 	return &Env{}
 }
 
