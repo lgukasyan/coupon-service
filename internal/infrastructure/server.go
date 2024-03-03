@@ -6,6 +6,8 @@ import (
 	"coupon_service/internal/infrastructure/router"
 	"log"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Start() {
@@ -20,11 +22,17 @@ func Start() {
 		log.Fatal(err)
 	}
 
-	// Set up API router
-	r := router.SetUpRouter()
+	// Create gin.engine
+	r := gin.Default()
 	if r == nil {
-		log.Fatal("gin.engine is empty")
+		log.Fatal("gin.engine empty")
 	}
+
+	// Set up api group route
+	apiGroup := r.Group("/api")
+
+	// Set up coupon route
+	router.SetUpCouponRouter(apiGroup, db)
 
 	// Read port env
 	port := os.Getenv("PORT")
