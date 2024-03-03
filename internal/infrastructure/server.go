@@ -1,33 +1,48 @@
 package infrastructure
 
 import (
+	"coupon_service/config"
+	"coupon_service/internal/domain/model"
 	"coupon_service/internal/infrastructure/db"
 	"coupon_service/internal/infrastructure/router"
+	"errors"
 	"log"
-	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Start() {
+func Start() (*gin.Engine, error) {
+	// Create new env obj
+	env := config.NewEnvConfig()
+
+	// Load env
+	if err := env.Load(); err != nil {
+		log.Fatal(err)
+	}
+
 	// Check DB connection and then start server
-	_, err := db.New().Connect()
+	db, err := db.New().Connect()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	// Set up API router
-	r := router.SetUpRouter()
+	// Migration
+	if err := db.AutoMigrate(&model.Coupon{}); err != nil {
+		return nil, err
+	}
+
+	// Create gin.engine
+	r := gin.Default()
 	if r == nil {
-		log.Fatal("gin.engine is empty")
+		return nil, errors.New("gin.engine is empty")
 	}
 
-	// Read port env
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Fatal("port env is empty")
-	}
+	// Set up api group route
+	apiGroup := r.Group("/api")
 
-	// Start
-	if err := r.Run(":" + port); err != nil {
-		log.Fatal(err)
-	}
+	// Set up coupon route
+	router.SetUpCouponRouter(apiGroup, db)
+
+	// Return gin.engine
+	return r, nil
 }

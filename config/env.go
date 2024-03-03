@@ -1,6 +1,8 @@
 package config
 
-import "github.com/joho/godotenv"
+import (
+	"github.com/joho/godotenv"
+)
 
 type IEnv interface {
 	Load() error // Load env file
@@ -16,5 +18,5 @@ func NewEnvConfig() IEnv {
 
 // Decorators
 func (e *Env) Load() error {
-	return godotenv.Load("config/.env")
+	return godotenv.Load("../../config/.env")
 }
