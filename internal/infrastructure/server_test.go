@@ -18,7 +18,7 @@ func TestServerStart(t *testing.T) {
 	defer ts.Close()
 
 	// Send test
-	resp, err := http.Get(ts.URL + "/api/coupon")
+	resp, err := http.Get(ts.URL + "/api/ping")
 	assert.NoError(t, err, "error while sending a GET request")
 
 	// Close at the end
