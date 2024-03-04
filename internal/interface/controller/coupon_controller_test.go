@@ -21,65 +21,40 @@ func (m *CouponServiceMock) Create(coupon *model.Coupon) error {
 	return args.Error(0)
 }
 
-func TestCouponControllerCreateValidRequest(t *testing.T) {
+func TestCouponController(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	r := gin.Default()
 
 	mockService := new(CouponServiceMock)
 	controller := NewCouponController(mockService)
 
-	r.POST("/coupon", controller.Create)
-	mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
-
-	body := bytes.NewBufferString(`{"code": "12345", "discount": 2, "min_basket_value": 2}`)
-	req, _ := http.NewRequest("POST", "/coupon", body)
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-	mockService.AssertExpectations(t)
-}
-
-func TestCouponControllerCreateInvalidKeyName(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-
-	mockService := new(CouponServiceMock)
-
-	controller := NewCouponController(mockService)
 	r.POST("/coupon", controller.Create)
 
-	body := bytes.NewBufferString(`{"wrong": "12345", "discount": 1, "min_basket_value": 1}`)
-	req, err := http.NewRequest("POST", "/coupon", body)
-	assert.NoError(t, err, "error sending the GET request")
-	req.Header.Add("Content-Type", "application/json")
+	t.Run("Valid coupon schema, should return 200", func(t *testing.T) {
+		mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
+		body := bytes.NewBufferString(`{"code": "12345", "discount": 2, "min_basket_value": 2}`)
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+		req, _ := http.NewRequest("POST", "/coupon", body)
+		req.Header.Set("Content-Type", "application/json")
 
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-	mockService.AssertExpectations(t)
-}
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-func TestCouponControllerCreateInvalidString(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	r := gin.Default()
+		assert.Equal(t, http.StatusCreated, w.Code)
+		mockService.AssertExpectations(t)
+	})
 
-	mockService := new(CouponServiceMock)
+	t.Run("Invalid coupon schema, should return 400", func(t *testing.T) {
+		mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
+		body := bytes.NewBufferString(`{"": "12345", "discount": 2, "min_basket_value": 2}`)
 
-	controller := NewCouponController(mockService)
-	r.POST("/coupon", controller.Create)
+		req, _ := http.NewRequest("POST", "/coupon", body)
+		req.Header.Add("Content-Type", "application/json")
 
-	body := bytes.NewBufferString(``)
-	req, err := http.NewRequest("POST", "/coupon", body)
-	assert.NoError(t, err, "error sending the GET request")
-	req.Header.Add("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-	mockService.AssertExpectations(t)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		mockService.AssertExpectations(t)
+	})
 }
