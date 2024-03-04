@@ -3,6 +3,7 @@ package controller
 import (
 	"coupon_service/internal/application/services"
 	"coupon_service/internal/domain/model"
+	"coupon_service/internal/interface/response"
 	"encoding/json"
 	"net/http"
 
@@ -25,15 +26,15 @@ func (c *CouponController) Ping(ctx *gin.Context) {
 func (c *CouponController) Create(ctx *gin.Context) {
 	var coupon model.Coupon
 	if err := json.NewDecoder(ctx.Request.Body).Decode(&coupon); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "error reading body"})
+		response.Error(ctx, http.StatusBadRequest, err)
 		return
 	}
 
 	validate := validator.New()
 	if err := validate.Struct(coupon); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		response.Error(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	ctx.AbortWithStatus(http.StatusOK)
+	response.JSON(ctx, http.StatusCreated, nil)
 }
