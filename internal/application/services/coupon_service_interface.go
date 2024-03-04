@@ -1,3 +1,7 @@
 package services
 
-type ICouponService interface{}
+import "coupon_service/internal/domain/model"
+
+type ICouponService interface {
+	Create(*model.Coupon) error
+}

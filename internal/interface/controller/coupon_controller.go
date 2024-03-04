@@ -16,7 +16,9 @@ type CouponController struct {
 }
 
 func NewCouponController(cs services.ICouponService) ICouponController {
-	return &CouponController{}
+	return &CouponController{
+		couponService: cs,
+	}
 }
 
 func (c *CouponController) Ping(ctx *gin.Context) {
@@ -32,6 +34,11 @@ func (c *CouponController) Create(ctx *gin.Context) {
 
 	validate := validator.New()
 	if err := validate.Struct(coupon); err != nil {
+		response.Error(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := c.couponService.Create(&coupon); err != nil {
 		response.Error(ctx, http.StatusBadRequest, err)
 		return
 	}
