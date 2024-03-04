@@ -31,7 +31,7 @@ func TestCouponControllerCreateValidRequest(t *testing.T) {
 	r.POST("/coupon", controller.Create)
 	mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
 
-	body := bytes.NewBufferString(`{"code": "12345", "discount": 1, "min_basket_value": 1}`)
+	body := bytes.NewBufferString(`{"code": "12345", "discount": 2, "min_basket_value": 2}`)
 	req, _ := http.NewRequest("POST", "/coupon", body)
 	req.Header.Set("Content-Type", "application/json")
 
