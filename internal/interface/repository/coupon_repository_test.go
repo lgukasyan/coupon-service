@@ -51,21 +51,21 @@ func TestCouponRepository(t *testing.T) {
 
 	// Coupon
 	coupon := &model.Coupon{
-		Code:           "12345",
-		Discount:       10,
+		Code:           "DESC1",
+		Discount:       1,
 		MinBasketValue: 100,
 	}
 
 	// Case FindByCode
-	t.Run("Should return false ", func(t *testing.T) {
-		ok, err := repo.FindByCode(coupon.Code)
+	t.Run("Should return false", func(t *testing.T) {
+		ok, err := repo.Exists(coupon.Code)
 		assert.Equal(t, false, ok)
 		assert.NoError(t, err, "should be nil")
 	})
 
 	// Case Create
 	t.Run("Should return nil", func(t *testing.T) {
-		ok, err := repo.FindByCode(coupon.Code)
+		ok, err := repo.Exists(coupon.Code)
 		assert.Equal(t, false, ok)
 		assert.NoError(t, err, "should be nil")
 
@@ -75,7 +75,7 @@ func TestCouponRepository(t *testing.T) {
 
 	// Case FindByCode already exists
 	t.Run("Should return true", func(t *testing.T) {
-		ok, err := repo.FindByCode(coupon.Code)
+		ok, err := repo.Exists(coupon.Code)
 		assert.Equal(t, true, ok)
 		assert.NoError(t, err, "should be nil")
 	})
@@ -84,6 +84,13 @@ func TestCouponRepository(t *testing.T) {
 	t.Run("Get coupons", func(t *testing.T) {
 		codes, err := repo.Get()
 		assert.NotEmpty(t, codes, "shouldn't be empty")
+		assert.NoError(t, err, "should be nil")
+	})
+
+	// FindByCode
+	t.Run("Get coupon by Code", func(t *testing.T) {
+		coupon, err := repo.FindByCode("DESC1")
+		assert.NotEmpty(t, coupon, "shouldn't be empty")
 		assert.NoError(t, err, "should be nil")
 	})
 

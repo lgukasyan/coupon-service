@@ -3,6 +3,7 @@ package services
 import (
 	"coupon_service/internal/domain"
 	"coupon_service/internal/domain/model"
+	"coupon_service/internal/interface/dto"
 	"errors"
 )
 
@@ -23,7 +24,7 @@ func (s *CouponService) Create(coupon *model.Coupon) error {
 	}
 
 	// Check if coupon code exists
-	ok, err := s.couponRepository.FindByCode(coupon.Code)
+	ok, err := s.couponRepository.Exists(coupon.Code)
 	if err != nil {
 		return err
 	}
@@ -48,4 +49,32 @@ func (s *CouponService) Get() ([]string, error) {
 	}
 
 	return codes, nil
+}
+
+func (s *CouponService) Apply(basket *dto.BasketRequestDTO) (*dto.BasketResponseDTO, error) {
+	coupon, err := s.couponRepository.FindByCode(basket.Code)
+	if err != nil {
+		return nil, err
+	}
+
+	if coupon == nil {
+		return nil, errors.New("coupon is nil")
+	}
+
+	resp := &dto.BasketResponseDTO{
+		Value:           basket.Value,
+		AppliedDiscount: coupon.Discount,
+	}
+
+	// Rules
+	if basket.Value < coupon.MinBasketValue {
+		resp.ApplicationSuccessful = false
+		return resp, nil
+	}
+
+	finalValue := basket.Value - ((basket.Value * coupon.Discount) / 100)
+	resp.ApplicationSuccessful = true
+	resp.FinalValue = &finalValue
+
+	return resp, nil
 }

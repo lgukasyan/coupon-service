@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"coupon_service/internal/domain/model"
+	"coupon_service/internal/interface/dto"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,6 +27,11 @@ func (m *CouponServiceMock) Get() ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *CouponServiceMock) Apply(basket *dto.BasketRequestDTO) (*dto.BasketResponseDTO, error) {
+	args := m.Called(basket)
+	return args.Get(0).(*dto.BasketResponseDTO), args.Error(1)
+}
+
 func TestCouponController(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -35,10 +41,11 @@ func TestCouponController(t *testing.T) {
 	r := gin.Default()
 	r.GET("/coupon", controller.Get)
 	r.POST("/coupon/create", controller.Create)
+	r.POST("/coupon/apply", controller.Apply)
 
 	t.Run("Valid coupon schema, should return 200", func(t *testing.T) {
 		mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
-		body := bytes.NewBufferString(`{"code": "12345", "discount": 2, "min_basket_value": 2}`)
+		body := bytes.NewBufferString(`{"code": "DESC1", "discount": 2, "min_basket_value": 2}`)
 
 		req, _ := http.NewRequest("POST", "/coupon/create", body)
 		req.Header.Set("Content-Type", "application/json")
@@ -52,7 +59,7 @@ func TestCouponController(t *testing.T) {
 
 	t.Run("Invalid coupon schema, should return 400", func(t *testing.T) {
 		mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
-		body := bytes.NewBufferString(`{"": "12345", "discount": 2, "min_basket_value": 2}`)
+		body := bytes.NewBufferString(`{"": "DESC1", "discount": 2, "min_basket_value": 2}`)
 
 		req, _ := http.NewRequest("POST", "/coupon/create", body)
 		req.Header.Add("Content-Type", "application/json")
@@ -72,6 +79,30 @@ func TestCouponController(t *testing.T) {
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("Apply coupon valid schema, should return 200", func(t *testing.T) {
+		mockService.On("Apply", mock.Anything).Return(&dto.BasketResponseDTO{}, nil)
+		body := bytes.NewBufferString(`{"code": "DESC1", "value": 100}`)
+		req, _ := http.NewRequest("POST", "/coupon/apply", body)
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("Apply coupon invalid schema, should return 200", func(t *testing.T) {
+		mockService.On("Apply", mock.Anything).Return(&dto.BasketResponseDTO{}, nil)
+		body := bytes.NewBufferString(`{"coe": "DESC1", "value": 100}`)
+		req, _ := http.NewRequest("POST", "/coupon/apply", body)
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 		mockService.AssertExpectations(t)
 	})
 }
