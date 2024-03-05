@@ -40,3 +40,12 @@ func (s *CouponService) Create(coupon *model.Coupon) error {
 
 	return nil
 }
+
+func (s *CouponService) Get() ([]string, error) {
+	codes, err := s.couponRepository.Get()
+	if err != nil {
+		return codes, err
+	}
+
+	return codes, nil
+}
