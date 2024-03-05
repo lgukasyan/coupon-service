@@ -18,10 +18,10 @@ func NewCouponRepository(db *gorm.DB) domain.ICouponRepository {
 	}
 }
 
-// Find By Code (PrimaryKey)
-func (repo *CouponRepository) FindByCode(code string) (bool, error) {
+// Exists?
+func (repo *CouponRepository) Exists(code string) (bool, error) {
 	var coupon model.Coupon
-	err := repo.DB.First(&coupon, code).Error
+	err := repo.DB.First(&coupon, "code = ?", code).Error
 
 	if errors.Is(gorm.ErrRecordNotFound, err) {
 		return false, nil
@@ -36,6 +36,9 @@ func (repo *CouponRepository) FindByCode(code string) (bool, error) {
 
 // Create
 func (repo *CouponRepository) Create(coupon *model.Coupon) error {
+	if coupon == nil {
+		return errors.New("coupon is empty")
+	}
 	return repo.DB.Create(&coupon).Error
 }
 
@@ -47,4 +50,16 @@ func (repo *CouponRepository) Get() ([]string, error) {
 	}
 
 	return codes, nil
+}
+
+// Get coupon
+func (repo *CouponRepository) FindByCode(code string) (*model.Coupon, error) {
+	var coupon model.Coupon
+	err := repo.DB.First(&coupon, "code = ?", code).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &coupon, nil
 }
