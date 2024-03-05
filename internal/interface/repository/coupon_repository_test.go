@@ -79,4 +79,22 @@ func TestCouponRepository(t *testing.T) {
 		assert.Equal(t, true, ok)
 		assert.NoError(t, err, "should be nil")
 	})
+
+	// Case Get coupon codes
+	t.Run("Get coupons", func(t *testing.T) {
+		codes, err := repo.Get()
+		assert.NotEmpty(t, codes, "shouldn't be empty")
+		assert.NoError(t, err, "should be nil")
+	})
+
+	db.Exec("DROP TABLE coupons")
+	if err := db.AutoMigrate(&model.Coupon{}); err != nil {
+		t.Error(err)
+	}
+
+	t.Run("Get empty coupons", func(t *testing.T) {
+		codes, err := repo.Get()
+		assert.Empty(t, codes, "should be empty")
+		assert.NoError(t, err, "should be nil")
+	})
 }

@@ -45,3 +45,12 @@ func (c *CouponController) Create(ctx *gin.Context) {
 
 	response.JSON(ctx, http.StatusCreated, nil)
 }
+
+func (c *CouponController) Get(ctx *gin.Context) {
+	codes, err := c.couponService.Get()
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, err)
+	}
+
+	response.JSON(ctx, http.StatusOK, codes)
+}

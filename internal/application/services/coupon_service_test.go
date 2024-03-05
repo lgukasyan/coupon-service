@@ -22,6 +22,11 @@ func (m *CouponRepositoryMock) Create(coupon *model.Coupon) error {
 	return args.Error(0)
 }
 
+func (m *CouponRepositoryMock) Get() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
 func TestCouponService(t *testing.T) {
 	coupon := model.Coupon{
 		Code:           "12345",
@@ -52,6 +57,15 @@ func TestCouponService(t *testing.T) {
 		mockRepository.On("Create", &coupon).Return(nil).Once()
 		err := service.Create(&coupon)
 		assert.NoError(t, err)
+		mockRepository.AssertExpectations(t)
+	})
+
+	// Case 4
+	t.Run("Get coupons should be empty", func(t *testing.T) {
+		mockRepository.On("Get").Return([]string{}, nil).Once()
+		codes, err := service.Get()
+		assert.NoError(t, err)
+		assert.Empty(t, codes)
 		mockRepository.AssertExpectations(t)
 	})
 }

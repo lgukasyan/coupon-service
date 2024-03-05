@@ -38,3 +38,13 @@ func (repo *CouponRepository) FindByCode(code string) (bool, error) {
 func (repo *CouponRepository) Create(coupon *model.Coupon) error {
 	return repo.DB.Create(&coupon).Error
 }
+
+// Get all codes
+func (repo *CouponRepository) Get() ([]string, error) {
+	var codes []string
+	if err := repo.DB.Model(&model.Coupon{}).Select("code").Find(&codes).Error; err != nil {
+		return codes, err
+	}
+
+	return codes, nil
+}

@@ -21,6 +21,11 @@ func (m *CouponServiceMock) Create(coupon *model.Coupon) error {
 	return args.Error(0)
 }
 
+func (m *CouponServiceMock) Get() ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
 func TestCouponController(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -28,13 +33,14 @@ func TestCouponController(t *testing.T) {
 	controller := NewCouponController(mockService)
 
 	r := gin.Default()
-	r.POST("/coupon", controller.Create)
+	r.GET("/coupon", controller.Get)
+	r.POST("/coupon/create", controller.Create)
 
 	t.Run("Valid coupon schema, should return 200", func(t *testing.T) {
 		mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
 		body := bytes.NewBufferString(`{"code": "12345", "discount": 2, "min_basket_value": 2}`)
 
-		req, _ := http.NewRequest("POST", "/coupon", body)
+		req, _ := http.NewRequest("POST", "/coupon/create", body)
 		req.Header.Set("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
@@ -48,13 +54,24 @@ func TestCouponController(t *testing.T) {
 		mockService.On("Create", mock.AnythingOfType("*model.Coupon")).Return(nil)
 		body := bytes.NewBufferString(`{"": "12345", "discount": 2, "min_basket_value": 2}`)
 
-		req, _ := http.NewRequest("POST", "/coupon", body)
+		req, _ := http.NewRequest("POST", "/coupon/create", body)
 		req.Header.Add("Content-Type", "application/json")
 
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("Get all codes, should return 200", func(t *testing.T) {
+		mockService.On("Get").Return([]string{}, nil)
+		req, _ := http.NewRequest("GET", "/coupon", nil)
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
 		mockService.AssertExpectations(t)
 	})
 }
