@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/joho/godotenv"
 )
 
@@ -16,7 +18,15 @@ func NewEnvConfig() IEnv {
 	return &Env{}
 }
 
-// Decorators
 func (e *Env) Load() error {
-	return godotenv.Load("config/.env")
+	_, dockerEnv := os.LookupEnv("DOCKER_ENV")
+
+	var envFile string
+	if dockerEnv {
+		envFile = "config/.env.docker"
+	} else {
+		envFile = "config/.env"
+	}
+
+	return godotenv.Load(envFile)
 }

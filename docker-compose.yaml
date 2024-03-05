@@ -1,11 +1,31 @@
 version: '3.6'
 services:
-  db:
+  golang_coupon_service:
+    build: .
+    environment:
+      DOCKER_ENV: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/go/src/app
+    depends_on:
+      - psql_db
+    networks:
+      - network-coupon
+
+  psql_db:
     image: postgres:latest
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
-      POSTGRES_DB: coupon_service
     ports:
       - "5432:5432"
+    networks:
+      - network-coupon
+
+networks:
+  network-coupon:
+    driver: bridge
