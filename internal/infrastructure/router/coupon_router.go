@@ -17,6 +17,7 @@ func SetUpCouponRouter(r *gin.RouterGroup, db *gorm.DB) {
 
 	// Routes
 	cGroup := r.Group("/coupon")
+
 	cGroup.GET("/", controller.Get)
 	cGroup.POST("/create", controller.Create)
 	cGroup.POST("/apply", controller.Apply)

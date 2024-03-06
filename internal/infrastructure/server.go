@@ -4,6 +4,7 @@ import (
 	"coupon_service/config"
 	"coupon_service/internal/domain/model"
 	"coupon_service/internal/infrastructure/db"
+	"coupon_service/internal/infrastructure/metrics"
 	"coupon_service/internal/infrastructure/router"
 	"errors"
 	"log"
@@ -37,11 +38,17 @@ func Start() (*gin.Engine, error) {
 		return nil, errors.New("gin.engine is empty")
 	}
 
+	// Middlewares
+	r.Use(metrics.PrometheusMiddlewareGlobalCounter())
+
 	// Set up api group route
 	apiGroup := r.Group("/api")
 
 	// Set up coupon route
 	router.SetUpCouponRouter(apiGroup, db)
+
+	// Prometheus Metrics
+	r.GET("/metrics", metrics.PrometheusHandler())
 
 	// Return gin.engine
 	return r, nil

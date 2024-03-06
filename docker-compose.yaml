@@ -1,4 +1,4 @@
-version: '3.6'
+version: '3.7'
 services:
   golang_coupon_service:
     build: .
@@ -10,6 +10,7 @@ services:
       - .:/go/src/app
     depends_on:
       - psql_db
+      - prometheus
     networks:
       - network-coupon
 
@@ -25,6 +26,33 @@ services:
       - "5432:5432"
     networks:
       - network-coupon
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - network-coupon
+    depends_on:
+      - psql_db
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    ports:
+      - "3000:3000"
+    networks:
+      - network-coupon
+
+volumes:
+  grafana-data:
 
 networks:
   network-coupon:
