@@ -18,9 +18,9 @@ func TestMain(m *testing.M) {
 		var envFile string
 
 		if dockerEnv {
-			envFile = "config/.env.docker"
+			envFile = "../../../config/.env.docker"
 		} else {
-			envFile = "config/.env"
+			envFile = "../../../config/.env"
 		}
 
 		if err := godotenv.Load(envFile); err != nil {
