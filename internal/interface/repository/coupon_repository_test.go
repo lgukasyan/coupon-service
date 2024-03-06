@@ -13,9 +13,19 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if err := godotenv.Load("../../../config/.env"); err != nil {
-		panic(err)
-	}
+		_, dockerEnv := os.LookupEnv("DOCKER_ENV")
+
+		var envFile string
+
+		if dockerEnv {
+			envFile = "config/.env.docker"
+		} else {
+			envFile = "config/.env"
+		}
+
+		if err := godotenv.Load(envFile); err != nil {
+			panic(err)
+		}
 
 	os.Exit(m.Run())
 }
